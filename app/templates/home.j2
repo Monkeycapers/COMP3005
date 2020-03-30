@@ -1,0 +1,10 @@
+{% extends "master.j2" %}
+{% block title %} Home {% endblock %}
+
+{% block content %}
+{{super()}}
+
+<div class="container" id='features'>
+{{macros.store_item_feature("Featured", "")}}
+</div>
+{% endblock %}

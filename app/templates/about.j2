@@ -1,0 +1,22 @@
+{% extends "master.j2" %}
+{% block title %} Home {% endblock %}
+
+{% block content %}
+{{super()}}
+<div class="container" style='margin-top:10px;'>
+  <div class="row justify-content-center">
+    <div class="col-6">
+      <p>BookExpress is a fake book store made for COMP3005. It is made with Flask and Postgresql on the backend, with template rendering using Jinja2, and Bootstrap on the frontend.</p>
+
+      <p>BookExpress is built as a generic web store that implements book selling, so it is possible to "sell" any other type of item on this store.
+
+      <p>
+      Author: Evan Jesty
+      <br>
+      Project Github: todo
+      </p>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
