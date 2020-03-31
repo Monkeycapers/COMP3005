@@ -1,5 +1,30 @@
-{% macro store_item_feature(name, storeitems) %}
+{% macro store_item_preview1(sItem) %}
+<div class="card book-card" style="width: 134px;">
+  <a href={{url_for('item_details', item_id=sItem.id)}}>
+  <img src={{url_for('static', filename='res/defaultBook.jpg')}} style='height:200px;'>
+  
+  <div class="card-body">
+    {{sItem.item.name}}
+    {% if sItem.isBook() %}
+    <h6>by <b>{{sItem.item.author.name}}</b> </h6>
+    {% endif %}
+    {% if sItem.isSale() %}
+      <del>{{sItem.getFormattedPrice()}}</del> <b>{{sItem.getFormattedDiscountPrice()}}</b>
+    {% else %}
+    {{sItem.price}}
+    {% endif %}
+  </div>
+  </a>
+</div>
+{% endmacro %}
+
+{% macro store_item_feature(name, url, storeitems) %}
   <div>
-  {{name}}
+  <div class='feature-head'><h4>{{name}}</h4> <span><a href={{url}}>See More</a></span></div>
+    <div class='feature-row'>
+      {% for item in storeitems %}
+        {{store_item_preview1(item)}}
+      {% endfor %}
+    </div>
   </div>
 {% endmacro %}

@@ -1,0 +1,15 @@
+{% extends "item.j2" %}
+{% block title %} {{book.name}} {% endblock %}
+
+{% block description %}
+
+<h2> {{book.name}} </h2>
+<hr>
+<h5> Author: {{author.name}}</h5>
+Published by: todo
+
+<p>
+{{book.description}}
+</p>
+
+{% endblock %}

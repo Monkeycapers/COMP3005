@@ -1,0 +1,42 @@
+{% extends "master.j2" %}
+
+{% block content %}
+
+<div class='container' style='margin-top:25px'>
+  <div class='row'>
+    <div class='col'>
+      <div>
+      {% block image %}
+        <img src={{url_for('static', filename='res/defaultBook.jpg')}} style='height:325px;'>  
+      {% endblock %}
+      </div>
+    </div>
+    <div class='col-7'>
+      {% block description %}
+      {% endblock %}
+    </div>
+    <div class='col'>
+      {% block buy_card %}
+        {% if item.isSale() %}
+          <span class='big-price'>{{item.getFormattedDiscountPrice()}}</span>
+          <br>
+          <del>{{item.getFormattedPrice()}}</del>
+          <p> You save: {{item.getFormattedCurrency(item.price - item.discount_price)}}!
+        {% else %}
+          <b>{{item.getFormattedPrice()}}</b>
+        {% endif %}
+        <p>
+        {% if item.quantity <= 10 %}
+        Hurry, only {{item.quantity}} items left in stock!
+        {% else %}
+        {{item.quantity}} items in stock.
+        {% endif %}
+        </p>
+
+        <button type="button" class="btn btn-primary">Add To Cart</button>
+      {% endblock %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

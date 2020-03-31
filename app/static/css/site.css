@@ -1,0 +1,37 @@
+.feature-head {
+    display:flex;
+    justify-content: space-between;
+}
+
+.feature-row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.book-card {
+    margin-left: .5em;
+    margin-right: .5em;
+    border:none;
+}
+
+.book-card a {
+    color:black;
+    text-decoration: none;
+}
+
+.book-card a:hover {
+    color:black;
+    cursor:pointer;
+}
+
+.book-card:hover {
+    text-decoration: underline;
+}
+
+.book-card .card-body {
+    padding:2px;
+}
+
+.big-price {
+    font-size:40px;
+}

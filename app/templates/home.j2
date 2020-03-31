@@ -4,7 +4,9 @@
 {% block content %}
 {{super()}}
 
-<div class="container" id='features'>
-{{macros.store_item_feature("Featured", "")}}
+<div class="container" id='features' style='margin-top:25px'>
+{% for feature in featured %}
+{{macros.store_item_feature(feature, featured[feature]["url"], featured[feature]["items"])}}
+{% endfor %}
 </div>
 {% endblock %}

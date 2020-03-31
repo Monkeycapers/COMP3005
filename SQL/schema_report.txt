@@ -12,6 +12,7 @@ publisher_id
 ISBN_13
 genre
 page_count
+description
 
 ItemType
 id
@@ -26,6 +27,11 @@ price
 discount_price
 revenue_share_percent
 auto_order_threshold
+rating
+
+Featured
+id
+item_id
 
 Publisher
 id
