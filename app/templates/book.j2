@@ -1,10 +1,7 @@
 {% extends "item.j2" %}
-{% block title %} {{book.name}} {% endblock %}
 
 {% block description %}
-
-<h2> {{book.name}} </h2>
-<hr>
+{{super()}}
 <h5> Author: {{author.name}}</h5>
 Published by: todo
 

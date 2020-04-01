@@ -1,0 +1,75 @@
+{% extends "master.j2" %}
+
+{% block content %}
+{{super()}}
+{% if not hasCart or cart | length == 0 %}
+<div class="container" style='margin-top:10px;'>
+  <div class="row justify-content-center">
+    <div class="col-6">
+      <p>Oh no! You have no items in your cart.</p>
+      <p>Get shopping!</p>
+    </div>
+  </div>
+</div>
+{% else %}
+
+<div class="container" style='margin-top:10px;'>
+
+<div class="row">
+<div class="col-10">
+<table class="table table-borderless">
+  <thead>
+    <tr>
+      <!-- not actually width:1px, just a dirty table trick -->
+      <th scope="col" style='width:1px'></th>
+      <th scope="col">Item Name</th>
+      <th scope="col">Quantity</th>
+      <th scope="col">Price</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    
+{% for item_id in cart %}
+{% set order_item = cart[item_id] %}
+{% set item = order_item["store_item"] %}
+
+<tr>
+  <th scope="row">
+    <div>
+      {% block image %}
+        <img src={{url_for('static', filename='res/defaultBook.jpg')}} style='height:140px;'>  
+      {% endblock %}
+    </div>
+  </th>
+  <td>{{item.name}}</td>
+  <td>{{order_item['quantity']}}</td>
+  <td>{{item.getFormattedDiscountPrice()}}</td>
+  <td>
+  <form action = "/updatecart" method = "post">
+    <input id='itemId' name='itemId' type="hidden" value={{item.id}}>
+    <label for='quantity'>Quantity: </label>
+    <input style="width:50px; margin-bottom: 10px" type='number' id='quantity' name="quantity" min="0" max={{item.quantity}} value="0">
+    <br>
+    <input type="submit" class="btn btn-secondary" value="Update Item">
+  </form>
+  </td>
+</tr>
+{% endfor %}
+
+  </tbody>
+</table>
+</div>
+<div class='col'>
+<h5>Cart Total</h5>
+<span class="big-price">{{formatted_total_price}}</span>
+<br>
+Total Savings: <b> {{formatted_total_discount}} </b>
+<button style='margin-top:10px' class="btn btn-primary">Checkout</button>
+</div>
+</div>
+</div>
+
+</div>
+{% endif %}
+{% endblock %}

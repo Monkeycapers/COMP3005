@@ -20,6 +20,7 @@ name
 
 StoreItem
 id
+name
 ItemType_id
 pointer_id
 quantity

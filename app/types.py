@@ -22,8 +22,10 @@ class Book:
         self.description = description
         
 class StoreItem:
-    def __init__ (self, _id, item_type, rating, item, quantity, price, discount_price, revenue_share_percent, auto_order_threshold):
+
+    def __init__ (self, _id, name, item_type, rating, item, quantity, price, discount_price, revenue_share_percent, auto_order_threshold):
         self.id = _id
+        self.name = name
         self.item_type = item_type
         self.rating = rating
         self.item = item
@@ -47,9 +49,21 @@ class StoreItem:
 
     def getFormattedDiscountPrice(self):
         return self.getFormattedCurrency(self.discount_price)
+
+    def getFormattedSaving(self):
+        return self.getFormattedCurrency(self.price - self.discount_price)
     
     def __str__(self):
-        return "Item type: " + self.item_type + " Item: " + self.item.__str__() + "; quantity: " + self.quantity + " price: " + self.price + " discount: " + self.discount_price
+        return ""
+        #return "Name: " + self.name + " Item type: " + str(self.item_type) + " Item: " + self.item.__str__() + "; quantity: " + self.quantity + " price: " + self.price + " discount: " + self.discount_price
 
     def __repr__(self):
         return self.__str__()
+
+class OrderItem:
+    
+    def __init__(self, store_item, order_quantity):
+        self.store_item = store_item
+        self.order_quantity = order_quantity
+
+            
