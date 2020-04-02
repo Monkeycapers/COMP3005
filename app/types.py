@@ -1,4 +1,5 @@
 from enum import Enum
+from main import Bcrypt, check_password_hash, generate_password_hash
 
 class ItemType(Enum):
     BOOK = 1
@@ -65,5 +66,35 @@ class OrderItem:
     def __init__(self, store_item, order_quantity):
         self.store_item = store_item
         self.order_quantity = order_quantity
+
+class User:
+
+    def __init__(self, _id, email, password_hash):
+        self.id = _id
+        self.email = email
+        self.password_hash = password_hash
+    
+    def get_id(self):
+        return str(self.id)
+
+    #return True if hash(password) == password_hash
+    def test_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    #flask_login properties
+    
+    @property
+    def is_active(self):
+        return True
+
+    @property
+    def is_authenticated(self):
+        return True
+
+    @property
+    def is_anonymous(self):
+        return False
+
+    
 
             

@@ -1,0 +1,13 @@
+{% extends "master.j2" %}
+
+{% block content %}
+{{super()}}
+
+<div class="container" style='margin-top:10px;'>
+email: {{user.email}}
+<div class="row">
+  <h2> My Orders: </h2>
+</div>
+</div>
+
+{% endblock %}
