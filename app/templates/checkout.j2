@@ -1,0 +1,100 @@
+{% extends "master.j2" %}
+
+{% block content %}
+{{super()}}
+
+<div class="container" style='margin-top:10px;'>
+
+<div class="row">
+<div class="col">
+<h2> Review Order </h2>
+<table class="table table-borderless">
+  <thead>
+    <tr>
+      <!-- not actually width:1px, just a dirty table trick -->
+      <th scope="col" style='width:1px'></th>
+      <th scope="col">Item Name</th>
+      <th scope="col">Quantity</th>
+      <th scope="col">Price</th>
+    </tr>
+  </thead>
+  <tbody>
+    
+{% for item_id in cart %}
+{% set order_item = cart[item_id] %}
+{% set item = order_item["store_item"] %}
+
+<tr>
+  <th scope="row">
+    <div>
+      {% block image %}
+        <img src={{url_for('static', filename='res/defaultBook.jpg')}} style='height:140px;'>  
+      {% endblock %}
+    </div>
+  </th>
+  <td>{{item.name}}</td>
+  <td>{{order_item['quantity']}}</td>
+  <td>{{item.getFormattedDiscountPrice()}}</td>
+</tr>
+{% endfor %}
+
+  </tbody>
+</table>
+
+<div>
+    <h5>Order Total</h5>
+    <span class="big-price">{{formatted_total_price}}</span>
+    <br>
+    Total Savings: <b> {{formatted_total_discount}} </b>
+</div>
+
+<p> Want to change your order? <a href={{url_for('cart')}}> Click here to go back to the cart. </a> </p>
+</div>
+</div>
+
+<div class="row">
+  <div class="col">
+    <p> Currently signed in as: {{user.email}} </p>
+    <form action="/checkout" method="post">
+    <label for="firstname"> First Name </label>
+    <input id="firstname" name="firstname" required class="form-control" type="text" placeholder="First Name">
+    <label for="lastname"> Last Name </label>
+    <input id="lastname" name="lastname" required class="form-control" type="text" placeholder="Last Name">
+    <h5> Billing </h5>
+    <div class="form-group">
+        <label for="b-country"> Currently only Canadian addresses are supported! </label>
+        <br>
+        <input type="hidden" id="b-country" name="b-country" value="Canada">
+        <label for="b-address"> Street Address </label>
+        <input id="b-address" name="b-address" required class="form-control" type="text" placeholder="Address">
+        <label for="b-city"> City </label>
+        <input id="b-city" name="b-city" required class="form-control" type="text" placeholder="City">
+        <label for="b-province"> Province </label>
+        <input id="b-province" name="b-province" required class="form-control" type="text" placeholder="Province">
+        <label for="b-postalcode"> Postal Code </label>
+        <input id="b-postalcode" name="b-postalcode" required class="form-control" type="text" placeholder="Postal Code">
+        <label for="creditcard"> Credit Card </label>
+        <input id="creditcard" name="creditcard" required class="form-control" type="text" placeholder="Put a fake Credit Card#">
+    </div>
+    <h5> Shipping </h5>
+    <div class="form-group">
+        <label for="s-country"> Currently only Canadian addresses are supported! </label>
+        <input type="hidden" id="s-country" name="s-country" value="Canada">
+        <br>
+        <label for="s-address"> Street Address </label>
+        <input id="s-address" name="s-address" required class="form-control" type="text" placeholder="Address">
+        <label for="s-city"> City </label>
+        <input id="s-city" name="s-city" required class="form-control" type="text" placeholder="City">
+        <label for="s-province"> Province </label>
+        <input id="s-province" name="s-province" required class="form-control" type="text" placeholder="Province">
+        <label for="s-postalcode"> Postal Code </label>
+        <input id="s-postalcode" name="s-postalcode" required class="form-control" type="text" placeholder="Postal Code">
+    </div>
+
+    <button type='submit' class="btn btn-primary" style='margin-bottom:25px'>Submit Order</button>
+
+    </form>
+  </div>
+</div>
+</div>
+{% endblock %}

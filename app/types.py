@@ -61,11 +61,30 @@ class StoreItem:
     def __repr__(self):
         return self.__str__()
 
-class OrderItem:
+#class OrderItem:
+#    
+#    def __init__(self, store_item, order_quantity):
+#        self.store_item = store_item
+#       self.order_quantity = order_quantity
+
+class Address:
+
+    def __init__(self, _id, country, province, city, address):
+        self.id = _id
+        self.country = country
+        self.province = province
+        self.city = city
+        self.address = address
+
+class Order:
     
-    def __init__(self, store_item, order_quantity):
-        self.store_item = store_item
-        self.order_quantity = order_quantity
+    def __init__(self, _id, tracking, first_name, last_name, b_address, s_address):
+        self.id = _id
+        self.tracking = tracking
+        self.first_name = first_name
+        self.last_name = last_name
+        self.b_address = b_address
+        self.s_address = s_address
 
 class User:
 
@@ -82,7 +101,6 @@ class User:
         return check_password_hash(self.password_hash, password)
 
     #flask_login properties
-    
     @property
     def is_active(self):
         return True

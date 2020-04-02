@@ -1,4 +1,6 @@
 from database import getStoreItemById
+import json
+
 def makeOrderItem(store_item, quantity):
     return {
         "id":store_item.id, "name": store_item.name, "quantity": quantity
@@ -65,3 +67,11 @@ def validate(items):
         "totalPrice":totalPrice,
         "totalDiscount":totalDiscount
     }
+
+#remove all class objects from items and return as a list of id => quantity
+#items must have been run through validate
+def simplify(items):
+    newItems = {}
+    for item_id in items:
+        newItems[item_id] = items[item_id]['quantity']
+    return newItems

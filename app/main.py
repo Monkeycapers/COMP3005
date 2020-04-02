@@ -93,7 +93,6 @@ def login(name='login'):
             return redirect(url_for('login'))
 
         
-
 @app.route('/register', methods=['POST', 'GET'])
 def register(name='register'):
     if request.method == 'GET':
@@ -148,7 +147,7 @@ def addcart():
 def updatecart():
     if not "cart" in session:
         flash("No valid cart!")
-        return
+        return flask.abort(400)
     item_id = request.form['itemId']
     print("item_id: " + item_id)
     quantity = int(request.form['quantity'])
@@ -157,6 +156,32 @@ def updatecart():
         session['cart'] = updateCartItem(session['cart'], store_item, quantity)
         return redirect(url_for('cart'))
     flash("Error: item_id " + item_id + " does not exist!")
+
+@app.route('/checkout', methods=['GET', 'POST'])
+@login_required
+def checkout():
+    if not "cart" in session:
+        flash("No valid cart!")
+        return flask.abort(400)
+
+    #todo: FAIL if anything in the cart changed
+    res = validate(session["cart"])
+    cart = res['cart']
+    total_price = res['totalPrice']
+    total_discount = res['totalDiscount']
+    if request.method == 'GET':
+        return render_template("checkout.j2", cart=cart, user=current_user,
+                total_price=total_price, formatted_total_price=getFormattedCurrency(total_price),
+                total_discount=total_discount, formatted_total_discount=getFormattedCurrency(total_discount))
+    else:
+        order = database.addOrder(cart, request.form)
+        if order is not None:
+            #success, so we can dump the cart
+            # del session["cart"] (for testing keep cart)
+            return render_template("orderconfirm.j2", order=order)
+        return flask.abort(400)
+        
+
     
 @app.route('/about')
 def about(name="About"):
