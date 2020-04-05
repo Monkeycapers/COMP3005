@@ -34,7 +34,8 @@ CREATE TABLE orders (
     tracking varchar(64),
     b_address_id integer,
     s_address_id integer,
-    order_date timestamp
+    order_date timestamp,
+    user_id integer
 );
 
 CREATE TABLE bank_accounts (

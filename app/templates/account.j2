@@ -4,12 +4,42 @@
 {{super()}}
 
 <div class="container" style='margin-top:10px;'>
-id: {{user.id}}
-email: {{user.email}}
-<br>
-<a class="btn btn-primary" href={{url_for('logout')}}> Log Out </a>
+  <div class="row">
+    <div class="col">
+      id: {{user.id}}
+      email: {{user.email}}
+      <br>
+      <a class="btn btn-primary" href={{url_for('logout')}}> Log Out </a>
+      <br>
+      <h2> My Orders: </h2>
+      <br>
+    </div>
+  </div>
 <div class="row">
-  <h2> My Orders: </h2>
+  <div class="col">
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col"> Order # </th>
+        <th scope="col"> Tracking # </th>
+        <th scope="col"> Order Total </th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    <tbody>
+  {% for order in order_items %}
+  <tr>
+    <td>{{order.id}}</td>
+    <td>{{order.tracking}}</td>
+    <td>{{order.total_price | format_currency}}</td>
+    <td>
+      <a class="btn btn-secondary" href={{url_for('orderdetails', order_id=order.id)}}> Show Order Details </a>
+    </td>
+  </tr>
+  {% endfor %}
+    </tbody>
+  </table>
+</div>
 </div>
 </div>
 

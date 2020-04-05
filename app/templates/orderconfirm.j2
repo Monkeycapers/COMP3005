@@ -6,9 +6,10 @@
 <div class="container" style='margin-top:10px;'>
     <div class="row">
         <div class="col">
-        <h2> Order Submitted </h2>
+            <h2> Order Submitted </h2>
             <p> Order # {{order.id}} </p>
             <p> Tracking # {{order.tracking}} </p>
+            <a href={{url_for('account')}}> See all orders </a>
         </div>
     </div>
 </div>

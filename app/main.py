@@ -36,6 +36,10 @@ def inject_enums():
 def load_user(user_id):
     return database.getUserById(user_id)
 
+@app.template_filter('format_currency')
+def format_currency(int):
+    return getFormattedCurrency(int)
+
 @app.route('/')
 @app.route('/home')
 def main(name="Home"):
@@ -52,8 +56,9 @@ def handle_item_details(item_id):
       return render_template("book.j2", item=item, book=item.item, author=item.item.author)
     return render_template("item.j2", item=item)
 
-@app.route('/img/<int:item_id>:<string:size>')
-def image(item_id, size):
+@app.route('/orderdetails/<int:order_id>')
+@login_required
+def orderdetails(order_id):
     pass
 
 @app.route('/item/<int:item_id>')
@@ -68,7 +73,9 @@ def item_details_with_slug(item, slug):
 @app.route('/account')
 @login_required
 def account():
-    return render_template("account.j2", user=current_user)
+    pprint(current_user)
+    order_items = database.getUserOrders(current_user)
+    return render_template("account.j2", user=current_user, order_items=order_items)
 
 @app.route('/logout')
 @login_required
@@ -183,7 +190,7 @@ def checkout():
                 total_price=total_price, formatted_total_price=getFormattedCurrency(total_price),
                 total_discount=total_discount, formatted_total_discount=getFormattedCurrency(total_discount))
     else:
-        order = database.addOrder(cart, request.form)
+        order = database.addOrder(cart, total_price, total_discount, request.form, current_user)
         if order is not None:
             #success, so we can dump the cart
             # del session["cart"] (for testing keep cart)

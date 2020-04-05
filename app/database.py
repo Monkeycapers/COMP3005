@@ -5,6 +5,7 @@ import Cart, Constants
 import psycopg2
 from psycopg2.extras import Json
 import random, string
+import math
 
 DEFAULT_FEATURED_ITEM_COUNT = 5
 TRACKING_NUMBER_LENGTH = 64
@@ -179,10 +180,22 @@ def pay(payee_id, money, cur):
 
 #save changes to item
 def updateItem(store_item, cur):
-    cur.execute("UPDATE store_items SET name=%s, item_type=%s, quantity=%s, price=%s, discount_price=%s, revenue_share_percent=%s, auto_order_threshold=%s, image_file_name=%s",
-    (store_item.name, store_item.item_type.value, store_item.quantity, store_item.price, store_item.discount_price, store_item.revenue_share_percent, store_item.auto_order_threshold, store_item.image_file_name))
+    cur.execute("UPDATE store_items SET name=%s, item_type=%s, quantity=%s, price=%s, discount_price=%s, revenue_share_percent=%s, auto_order_threshold=%s, img_file_name=%s WHERE id=%s",
+    (store_item.name, store_item.item_type.value, store_item.quantity, store_item.price, store_item.discount_price, store_item.revenue_share_percent, store_item.auto_order_threshold, store_item.image_file_name, store_item.id))
 
-def addOrder(cart, total_price, total_discount, form):
+def getUserOrders(user):
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM orders WHERE user_id=%s",
+                (user.id,))
+    allres = cur.fetchall()
+    orders = []
+    for res in allres:
+        order = Order(res[0], res[1], res[2], res[3], res[4], res[5], res[6], res[7], res[8], res[9], res[10])
+        orders.append(order)
+    return orders
+
+def addOrder(cart, total_price, total_discount, form, user):
 
     simple_cart = Cart.simplify(cart)
     tracking_number = makeTrackingNumber()
@@ -194,17 +207,23 @@ def addOrder(cart, total_price, total_discount, form):
     s_address_id = addAddress(form['s-country'], form['s-city'], form['s-province'], form['s-address'], cur)
 
     # we do not store credit card information (typically you would interface with a payment provider now for that)
-    cur.execute("INSERT INTO orders (cart, total_price, total_discount, first_name, last_name, tracking, b_address_id, s_address_id) VALUES (%s,%s,%s,%s,%s,%s,'now') RETURNING id", 
-                (Json(simple_cart), total_price, total_discount, form['firstname'], form['lastname'], tracking_number, b_address_id, s_address_id))
+    cur.execute("INSERT INTO orders (cart, total_price, total_discount_price, first_name, last_name, tracking, b_address_id, s_address_id, user_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,'now') RETURNING id, order_date", 
+                (Json(simple_cart), str(total_price), str(total_discount), str(form['firstname']), str(form['lastname']), str(tracking_number), str(b_address_id), str(s_address_id), str(user.id)))
 
-    order_id = cur.fetchone()[0]
+    res = cur.fetchone()
+    order_id = res[0]
+    order_date = res[1]
+    #order_id = cur.fetchone()[0]
 
     # now we need to update each items quantity, and pay people accordingly
-    for order_item in cart:
+    for item_id in cart:
+        order_item = cart[item_id]
         store_item = order_item['store_item']
-        owner_share = int(floor(order_item['quantity'] * store_item.discount_price * (1 - revenue_share_percent)))
-        publisher_share = int(ceil(order_item['quantity'] * store_item.discount_price * revenue_share_percent)) #todo pay publisher
+        owner_share = int(math.floor(order_item['quantity'] * store_item.discount_price * (1 - store_item.revenue_share_percent)))
+        publisher_share = int(math.ceil(order_item['quantity'] * store_item.discount_price * store_item.revenue_share_percent)) #todo pay publisher
         pay(Constants.OWNER_BANKING_ID, owner_share, cur)
+        if store_item.item_type == ItemType.BOOK:
+            pay(store_item.item.publisher.id, publisher_share, cur)
         store_item.quantity -= order_item['quantity'] #todo I could detect that we need to order more books here
         updateItem(store_item, cur)
         #pay(publisher_id, cur)
@@ -215,7 +234,7 @@ def addOrder(cart, total_price, total_discount, form):
     billing_address = Address(b_address_id, form['b-country'], form['b-city'], form['b-province'], form['b-address'])
     shipping_address = Address(s_address_id, form['s-country'], form['s-city'], form['s-province'], form['s-address'])
 
-    order = Order(order_id, tracking_number, form['firstname'], form['lastname'], billing_address, shipping_address)
+    order = Order(order_id, total_price, total_discount, simple_cart, tracking_number, form['firstname'], form['lastname'], billing_address, shipping_address, order_date, user.id)
 
     cur.close()
     conn.close()
