@@ -1,9 +1,9 @@
-import os
+import os, copy
 
 import flask
 
 from flask import Flask, render_template, session, redirect, url_for, request, flash
-from flask_login import LoginManager, login_user, current_user, login_required
+from flask_login import LoginManager, login_user, current_user, login_required, logout_user
 from flask_bcrypt import Bcrypt, check_password_hash, generate_password_hash
 from pprint import pprint
 
@@ -70,6 +70,12 @@ def item_details_with_slug(item, slug):
 def account():
     return render_template("account.j2", user=current_user)
 
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('main'))
+
 @app.route('/login', methods=['POST', 'GET'])
 def login(name='login'):
     if request.method == 'GET':
@@ -83,7 +89,7 @@ def login(name='login'):
 
         user = database.getUserByEmail(email)
 
-        if user is not None and user.test_password(password):
+        if user is not None and check_password_hash(user.password_hash, password):
             login_user(user, remember)
             #if not is_safe_url(next):
             #    return flask.abort(400)
@@ -120,9 +126,12 @@ def register(name='register'):
 @app.route('/cart')
 def cart(name="cart"):
     if "cart" in session:
+        print("Cart: ")
         pprint(session["cart"])
-        res = validate(session["cart"])
+        #c = session["cart"]
+        res = validate(copy.deepcopy(session["cart"]))
         cart = res['cart']
+        #session["cart"] = c
         total_price = res['totalPrice']
         total_discount = res['totalDiscount']
         return render_template("cart.j2", hasCart=True, cart=cart,
@@ -181,8 +190,14 @@ def checkout():
             return render_template("orderconfirm.j2", order=order)
         return flask.abort(400)
         
-
-    
 @app.route('/about')
 def about(name="About"):
     return render_template("about.j2", name=name)
+
+@app.route('/admin')
+@login_required
+def admin(name="Admin"):
+    if current_user.super_user:
+        return render_template("admin.j2")
+    flash("User is not a super_user!")
+    return flask.abort(401)

@@ -1,5 +1,8 @@
 from enum import Enum
-from main import Bcrypt, check_password_hash, generate_password_hash
+#from main import Bcrypt, check_password_hash, generate_password_hash
+#import main
+import os
+import Constants
 
 class ItemType(Enum):
     BOOK = 1
@@ -9,6 +12,13 @@ class Author:
         self.id = _id
         self.source_key = source_key
         self.name = name
+
+class Publisher:
+    def __init__(self, _id, name, address_id, banking_id):
+        self.id = _id
+        self.name = name
+        self.address_id = address_id
+        self.banking_id = banking_id
 
 class Book:
     def __init__(self, _id, source_key, name, author, publisher, isbn, genre, page_count, description):
@@ -24,11 +34,11 @@ class Book:
         
 class StoreItem:
 
-    def __init__ (self, _id, name, item_type, rating, item, quantity, price, discount_price, revenue_share_percent, auto_order_threshold):
+    def __init__ (self, _id, name, item_type, item, quantity, price, discount_price, revenue_share_percent, auto_order_threshold, image_file_name):
         self.id = _id
         self.name = name
+        self.image_file_name = image_file_name
         self.item_type = item_type
-        self.rating = rating
         self.item = item
         self.quantity = quantity
         self.price = price
@@ -53,6 +63,9 @@ class StoreItem:
 
     def getFormattedSaving(self):
         return self.getFormattedCurrency(self.price - self.discount_price)
+
+    def getFullImageFileName(self):
+        return os.path.join(Constants.IMAGES_DIRECTORY, self.image_file_name)
     
     def __str__(self):
         return ""
@@ -88,17 +101,18 @@ class Order:
 
 class User:
 
-    def __init__(self, _id, email, password_hash):
+    def __init__(self, _id, email, password_hash, super_user):
         self.id = _id
         self.email = email
         self.password_hash = password_hash
+        self.super_user = super_user
     
     def get_id(self):
         return str(self.id)
 
     #return True if hash(password) == password_hash
-    def test_password(self, password):
-        return check_password_hash(self.password_hash, password)
+    #def test_password(self, password):
+    #    return main.check_password_hash(self.password_hash, password)
 
     #flask_login properties
     @property

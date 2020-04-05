@@ -4,7 +4,10 @@
 {{super()}}
 
 <div class="container" style='margin-top:10px;'>
+id: {{user.id}}
 email: {{user.email}}
+<br>
+<a class="btn btn-primary" href={{url_for('logout')}}> Log Out </a>
 <div class="row">
   <h2> My Orders: </h2>
 </div>

@@ -10,7 +10,7 @@ def addItemToCart(items, store_item, quantity=1):
     if store_item.id in items:
         # update
         order_item = items[store_item.id]
-        order_item['quantity'] += min(store_item.quantity, order_item['quantity'] + quantity)
+        order_item['quantity'] += min(store_item.quantity, quantity)
     else:
         # add new item
         order_item = makeOrderItem(store_item, min(store_item.quantity, quantity))

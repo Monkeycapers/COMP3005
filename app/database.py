@@ -1,7 +1,7 @@
-from Types import ItemType, Author, Book, StoreItem, User, Address, Order
+from Types import ItemType, Author, Book, StoreItem, User, Address, Order, Publisher
 from main import Bcrypt, check_password_hash, generate_password_hash
 from pprint import pprint
-import Cart
+import Cart, Constants
 import psycopg2
 from psycopg2.extras import Json
 import random, string
@@ -13,48 +13,113 @@ def connect():
     conn = psycopg2.connect("dbname=BookExpress user=postgres password=root host=localhost")
     return conn
 
-#because the db isnt ready yet
-#returns a list of store items type=book 
-def makeFakeBooks(count):
-    items = []
-    for i in range(count):
-        storeItem = makeFakeBook(i, str("fakebook #" + str(i)))
-        items.append(storeItem)
-    return items
+def addBankingAccount(cur, balance):
+    cur.execute("INSERT INTO bank_accounts (balance) VALUES (%s) RETURNING id",
+                (balance,))
+    res = cur.fetchone()
+    return res[0]
 
-def makeFakeBook(_id, name):
-    author = Author(0, None, "fake author")
-    book = Book(_id, None, name, author, None, None, None, 500, "A fake description")
-    bookType = ItemType.BOOK
-    storeItem = StoreItem(_id, name, bookType, 3, book, 5, 500, 400, .5, 5)
-    return storeItem
+def addPublisher(cur, name, address_id, banking_account_id):
+    cur.execute("INSERT INTO publisher (name, address_id, banking_account_id) VALUES (%s, %s, %s) RETURNING id",
+                (name, address_id, banking_account_id))
+    res = cur.fetchone()
+    return res[0]
+
+def addBook(cur, name, source_key, author_id, publisher_id, isbn, page_count, description):
+    cur.execute("INSERT INTO book (source_key, name, author_id, publisher_id, isbn, page_count, description) VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id",
+                (source_key, name, author_id, publisher_id, isbn, page_count, description))
+    res = cur.fetchone()
+    return res[0]
+
+def addStoreItem(cur, ref_id, item_type, name, quantity, price, discount_price, revenue_share_percent, auto_order_threshold, image_file_name):
+    cur.execute("INSERT INTO store_items (ref_id, item_type, name, quantity, price, discount_price, revenue_share_percent, auto_order_threshold, img_file_name) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
+    (ref_id, item_type, name, quantity, price, discount_price, revenue_share_percent, auto_order_threshold, image_file_name))
+    res = cur.fetchone()
+    return res[0]
+
+def addAuthor(cur, source_key, name):
+    cur.execute("INSERT INTO author (source_key, name) VALUES (%s, %s) RETURNING id", (source_key,name))
+    res = cur.fetchone()
+    return res[0]
+
+def getPublisherById(cur, _id):
+    cur.execute("SELECT * FROM publisher WHERE id=%s",
+    (_id,))
+    res = cur.fetchone()
+    return Publisher(_id, res[1], res[2], res[3])
+
+def getAuthorById(cur, _id):
+    cur.execute("SELECT * FROM author WHERE id=%s",
+    (_id,))
+    res = cur.fetchone()
+    return Author(_id, res[1], res[2])
 
 # Return <count> random store items from the Featured table
 def getFeaturedItems(count=DEFAULT_FEATURED_ITEM_COUNT):
-    return makeFakeBooks(count)
+    conn = connect()
+    cur = conn.cursor()
+    #see https://www.postgresql.org/docs/current/tsm-system-rows.html
+    cur.execute("SELECT * FROM featured_items NATURAL RIGHT JOIN store_items TABLESAMPLE SYSTEM_ROWS(%s)" % (count,))
+    allres = cur.fetchall()
+    items = []
+    for res in allres:
+        pointer_obj = resolveRef(res[1], res[2], cur)
+        store_item = StoreItem(res[1], res[3], ItemType(res[2]), pointer_obj, res[4], res[5], res[6], res[7], res[8], res[9])
+        items.append(store_item)
+    cur.close()
+    conn.close()
+    return items
+
+def resolveRef(_id, item_type, cur):
+    print("resolve Ref for _id %d type %d" % (_id, item_type))
+    if item_type == ItemType.BOOK.value:
+        print("book")
+        cur.execute("SELECT * FROM book WHERE id=%s",
+                    (_id,))
+        res = cur.fetchone()
+        print("Res:")
+        pprint(res)
+        if res is not None:
+            book = Book(_id, res[1], res[2], getAuthorById(cur,res[3]), getPublisherById(cur,res[4]), res[5], "todo", res[6], res[7])
+            pprint(book)
+            return book
+    return None
 
 def getStoreItemById(_id):
-    return makeFakeBook(_id, str("fakebook #" + str(_id)))
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM store_items WHERE id=%s",
+    (_id,))
+    res = cur.fetchone()
+    store_item = None
+    if res is not None:
+        pointer_obj = resolveRef(res[1], res[2], cur)
+        store_item = StoreItem(_id, res[3], ItemType(res[2]), pointer_obj, res[4], res[5], res[6], res[7], res[8], res[9])
+
+    cur.close()
+    conn.close()
+    return store_item
+    #return makeFakeBook(_id, str("fakebook #" + str(_id)))
 
 def getUserById(_id):
     conn = connect()
     cur = conn.cursor()
-    cur.execute("SELECT id, email, pw_hash FROM users WHERE id=%s", (_id,))
+    cur.execute("SELECT id, email, pw_hash, super_user FROM users WHERE id=%s", (_id,))
 
     res = cur.fetchone()
 
     cur.close()
     conn.close()
 
-    if (res is not None):
-        user = User(res[0], res[1], res[2])
+    if res is not None:
+        user = User(res[0], res[1], res[2], res[3])
         return user
     return None
 
 def getUserByEmail(email, conn=None):
     conn = connect() if conn is None else conn
     cur = conn.cursor()
-    cur.execute("SELECT id, email, pw_hash FROM users WHERE email=%s", (email,))
+    cur.execute("SELECT id, email, pw_hash, super_user FROM users WHERE email=%s", (email,))
 
     res = cur.fetchone()
 
@@ -62,8 +127,8 @@ def getUserByEmail(email, conn=None):
     #print("length of res: %d" % len(res))
     
     user = None
-    if (res is not None and len(res) >= 3):
-        user = User(res[0], res[1], res[2])
+    if res is not None and len(res) >= 4:
+        user = User(res[0], res[1], res[2], res[3])
 
     cur.close()
     conn.close()
@@ -76,7 +141,7 @@ def addUser(email, password):
 
     conn = connect()
     cur = conn.cursor()
-    cur.execute("INSERT INTO users (email, pw_hash) VALUES (%s, %s)",
+    cur.execute("INSERT INTO users (email, pw_hash, super_user) VALUES (%s, %s, 'False')",
                 (email, password_hash))
 
     cur.close()
@@ -105,7 +170,19 @@ def addAddress(country, city, province, street_name, cur):
             address_id = int(res[0])
     return address_id
 
-def addOrder(cart, form):
+#feature the store item id
+def addFeature(cur, id):
+    cur.execute("INSERT INTO featured_items (id) VALUES(%s)", (id,))
+
+def pay(payee_id, money, cur):
+    cur.execute("UPDATE bank_accounts SET balance=balance + %s WHERE id=%s", (money, payee_id))
+
+#save changes to item
+def updateItem(store_item, cur):
+    cur.execute("UPDATE store_items SET name=%s, item_type=%s, quantity=%s, price=%s, discount_price=%s, revenue_share_percent=%s, auto_order_threshold=%s, image_file_name=%s",
+    (store_item.name, store_item.item_type.value, store_item.quantity, store_item.price, store_item.discount_price, store_item.revenue_share_percent, store_item.auto_order_threshold, store_item.image_file_name))
+
+def addOrder(cart, total_price, total_discount, form):
 
     simple_cart = Cart.simplify(cart)
     tracking_number = makeTrackingNumber()
@@ -116,11 +193,23 @@ def addOrder(cart, form):
     b_address_id = addAddress(form['b-country'], form['b-city'], form['b-province'], form['b-address'], cur)
     s_address_id = addAddress(form['s-country'], form['s-city'], form['s-province'], form['s-address'], cur)
 
-    # we do not store credit card information (typically you would interface with a payment provider for that)
-    cur.execute("INSERT INTO orders (cart, first_name, last_name, tracking, b_address_id, s_address_id) VALUES (%s,%s,%s,%s,%s,%s) RETURNING id", 
-                (Json(simple_cart), form['firstname'], form['lastname'], tracking_number, b_address_id, s_address_id))
+    # we do not store credit card information (typically you would interface with a payment provider now for that)
+    cur.execute("INSERT INTO orders (cart, total_price, total_discount, first_name, last_name, tracking, b_address_id, s_address_id) VALUES (%s,%s,%s,%s,%s,%s,'now') RETURNING id", 
+                (Json(simple_cart), total_price, total_discount, form['firstname'], form['lastname'], tracking_number, b_address_id, s_address_id))
 
     order_id = cur.fetchone()[0]
+
+    # now we need to update each items quantity, and pay people accordingly
+    for order_item in cart:
+        store_item = order_item['store_item']
+        owner_share = int(floor(order_item['quantity'] * store_item.discount_price * (1 - revenue_share_percent)))
+        publisher_share = int(ceil(order_item['quantity'] * store_item.discount_price * revenue_share_percent)) #todo pay publisher
+        pay(Constants.OWNER_BANKING_ID, owner_share, cur)
+        store_item.quantity -= order_item['quantity'] #todo I could detect that we need to order more books here
+        updateItem(store_item, cur)
+        #pay(publisher_id, cur)
+
+    #order complete, commit
     conn.commit()
 
     billing_address = Address(b_address_id, form['b-country'], form['b-city'], form['b-province'], form['b-address'])
