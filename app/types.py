@@ -93,8 +93,8 @@ class Order:
     
     def __init__(self, _id, total_price, total_discount_price, cart_json, first_name, last_name, tracking, b_address, s_address, date, user_id):
         self.id = _id
-        self.total_price = total_price
-        self.total_discount_price = total_discount_price
+        self.total_price = int(total_price)
+        self.total_discount_price = int(total_discount_price)
         self.cart_json = cart_json
         self.tracking = tracking
         self.first_name = first_name

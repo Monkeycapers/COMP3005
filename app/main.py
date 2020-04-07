@@ -37,8 +37,8 @@ def load_user(user_id):
     return database.getUserById(user_id)
 
 @app.template_filter('format_currency')
-def format_currency(int):
-    return getFormattedCurrency(int)
+def format_currency(i):
+    return getFormattedCurrency(int(i))
 
 @app.route('/')
 @app.route('/home')
@@ -59,7 +59,12 @@ def handle_item_details(item_id):
 @app.route('/orderdetails/<int:order_id>')
 @login_required
 def orderdetails(order_id):
-    pass
+    order_item = database.getOrderById(order_id)
+    cart = order_item.cart_json
+    if current_user.super_user or order_item.user_id == current_user.id:
+        return render_template("orderdetails.j2", order=order_item, cart = cart)
+    else:
+        return flask.abort(401)
 
 @app.route('/item/<int:item_id>')
 def item_details(item_id):
@@ -193,7 +198,7 @@ def checkout():
         order = database.addOrder(cart, total_price, total_discount, request.form, current_user)
         if order is not None:
             #success, so we can dump the cart
-            # del session["cart"] (for testing keep cart)
+            del session["cart"]
             return render_template("orderconfirm.j2", order=order)
         return flask.abort(400)
         

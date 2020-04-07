@@ -195,6 +195,15 @@ def getUserOrders(user):
         orders.append(order)
     return orders
 
+def getOrderById(order_id):
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM orders where id=%s",
+                (order_id,))
+    res = cur.fetchone()
+    return Order(res[0], res[1], res[2], res[3], res[4], res[5], res[6], res[7], res[8], res[9], res[10])
+
+
 def addOrder(cart, total_price, total_discount, form, user):
 
     simple_cart = Cart.simplify(cart)
@@ -207,7 +216,7 @@ def addOrder(cart, total_price, total_discount, form, user):
     s_address_id = addAddress(form['s-country'], form['s-city'], form['s-province'], form['s-address'], cur)
 
     # we do not store credit card information (typically you would interface with a payment provider now for that)
-    cur.execute("INSERT INTO orders (cart, total_price, total_discount_price, first_name, last_name, tracking, b_address_id, s_address_id, user_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,'now') RETURNING id, order_date", 
+    cur.execute("INSERT INTO orders (cart, total_price, total_discount_price, first_name, last_name, tracking, b_address_id, s_address_id, user_id, order_date) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,'now') RETURNING id, order_date", 
                 (Json(simple_cart), str(total_price), str(total_discount), str(form['firstname']), str(form['lastname']), str(tracking_number), str(b_address_id), str(s_address_id), str(user.id)))
 
     res = cur.fetchone()
@@ -234,7 +243,7 @@ def addOrder(cart, total_price, total_discount, form, user):
     billing_address = Address(b_address_id, form['b-country'], form['b-city'], form['b-province'], form['b-address'])
     shipping_address = Address(s_address_id, form['s-country'], form['s-city'], form['s-province'], form['s-address'])
 
-    order = Order(order_id, total_price, total_discount, simple_cart, tracking_number, form['firstname'], form['lastname'], billing_address, shipping_address, order_date, user.id)
+    order = Order(order_id, total_price, total_discount, simple_cart, form['firstname'], form['lastname'], tracking_number, billing_address, shipping_address, order_date, user.id)
 
     cur.close()
     conn.close()

@@ -9,6 +9,8 @@
             <h2> Order Submitted </h2>
             <p> Order # {{order.id}} </p>
             <p> Tracking # {{order.tracking}} </p>
+            <a href={{url_for('orderdetails', order_id=order.id)}} class="btn btn-primary"> See order details </a>
+            <br>
             <a href={{url_for('account')}}> See all orders </a>
         </div>
     </div>

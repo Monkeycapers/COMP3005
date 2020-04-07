@@ -59,7 +59,8 @@ def validate(items):
             if order_item['quantity'] > 0:
                 # item is valid, add to newItems
                 order_item['store_item'] = store_item
-                totalPrice += store_item.discount_price * order_item['quantity']
+                order_item['total_price'] = store_item.discount_price * order_item['quantity']
+                totalPrice += order_item['total_price']
                 totalDiscount += (store_item.price - store_item.discount_price) * order_item['quantity']
                 newItems[item_id] = order_item
     return {
@@ -73,5 +74,6 @@ def validate(items):
 def simplify(items):
     newItems = {}
     for item_id in items:
-        newItems[item_id] = items[item_id]['quantity']
+        newItems[item_id] = {"id": item_id, "name":items[item_id]['name'], "quantity": items[item_id]['quantity'],
+                            "total_price": items[item_id]['total_price'] }
     return newItems
