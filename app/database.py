@@ -1,5 +1,6 @@
 from Types import ItemType, Author, Book, StoreItem, User, Address, Order, Publisher
 from main import Bcrypt, check_password_hash, generate_password_hash
+from flask import abort
 from pprint import pprint
 import Cart, Constants
 import psycopg2
@@ -101,6 +102,124 @@ def getStoreItemById(_id):
     conn.close()
     return store_item
     #return makeFakeBook(_id, str("fakebook #" + str(_id)))
+
+def getStoreItemIDByISBN(isbn):
+    #get book's id
+    conn = connect()
+    cur = conn.cursor()
+
+    cur.execute("SELECT id FROM book WHERE isbn=%s",
+                (isbn,))
+    
+    res = cur.fetchone()
+    book_id = -1
+    if res is not None:
+        book_id = res[0]
+    store_id = None
+    if book_id != -1:
+        cur.execute("SELECT id FROM store_items WHERE ref_id=%s",
+                    (book_id,))
+        res = cur.fetchone()
+        if res is not None:
+            store_id = res[0]
+
+    cur.close()
+    conn.close()
+
+    return store_id
+
+# Start Paged Items
+# for now paging only supported for books (WHERE item_type=ItemType.BOOK.value)
+
+# define mapping from kwarg => sql query (WHERE id=..., etc)
+KWARG_TO_SQL = {
+    "author_id": {"flag": None, "query":"book.author_id=%s"},
+    "author_name": {"flag": "author", "query":"author.name LIKE %s"},
+    "book_name":{"flag": None, "query":"book.name LIKE %s"},
+    "isbn": {"flag": None, "query":"book.isbn=%s"}
+}
+
+SORT_TO_SQL = {
+    "price_low": "ORDER BY store_items.discount_price ASC",
+    "price_high": "ORDER BY store_items.discount_price DESC",
+    "name_A-Z": "ORDER BY store_items.name ASC",
+    "name_Z-A": "ORDER BY store_items.name DESC"
+}
+
+def doPagedQuery(cur, page, sort, **kwargs):
+    #determine what tables to join with
+    flags = {
+        "author":False, #grab details from author
+    }
+    #initial query string
+    queryStr = "SELECT * FROM store_items FULL OUTER JOIN book ON book.id=store_items.ref_id "
+
+    endStr = "WHERE "
+    didFirst = False
+
+    valList = []
+
+    sortStr = ''
+
+    for key, value in kwargs.items():
+        if key not in KWARG_TO_SQL:
+            continue
+        sql_map = KWARG_TO_SQL[key]
+        if sql_map["flag"]:
+            flags[key] = True
+        if didFirst:
+            endStr += " AND "
+        else:
+            didFirst = True
+        endStr += sql_map["query"]
+        valList.append(value)
+
+    #todo flags
+    queryStr += endStr
+
+    sortStr = SORT_TO_SQL[sort] if sort in SORT_TO_SQL else ''
+
+    queryStr += " " + sortStr 
+
+    queryStr += (" LIMIT %d OFFSET %d" % (Constants.PAGE_AMOUNT, Constants.PAGE_AMOUNT * (page - 1)))
+
+    print(queryStr) 
+
+    pprint(valList)
+
+    cur.execute(queryStr, tuple(valList))
+
+    allres = cur.fetchall()
+    pprint(allres)
+
+    items = []
+    for res in allres:
+        author = kwargs['author_obj'] if 'author_obj' in kwargs else getAuthorById(cur, res[13])
+        book = Book(res[1], res[11], res[12], author, res[14], res[15], "todo", res[16], res[17])
+        store_item = StoreItem(res[0], res[3], ItemType(res[2]), book, res[4], res[5], res[6], res[7], res[8], res[9])
+        items.append(store_item)
+    return items
+    #for res in allres:    
+
+def getBooksByAuthor(author_id, sort, page):
+    conn = connect()
+    cur = conn.cursor()
+
+    author = getAuthorById(cur, author_id)
+    if author is None:
+        cur.close()
+        conn.close()
+        abort(404)
+
+    items = doPagedQuery(cur, page, sort, author_id=author_id, author_obj=author)
+
+    is_next_page = len(items) == Constants.PAGE_AMOUNT
+
+    cur.close()
+    conn.close()
+    return author, items, is_next_page
+    
+# End Paged Items
 
 def getUserById(_id):
     conn = connect()

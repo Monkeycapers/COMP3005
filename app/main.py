@@ -2,7 +2,7 @@ import os, copy
 
 import flask
 
-from flask import Flask, render_template, session, redirect, url_for, request, flash
+from flask import Flask, render_template, session, redirect, url_for, request, flash, abort
 from flask_login import LoginManager, login_user, current_user, login_required, logout_user
 from flask_bcrypt import Bcrypt, check_password_hash, generate_password_hash
 from pprint import pprint
@@ -31,7 +31,8 @@ def inject_enums():
         return item.item_type == ItemType.BOOK
     return dict(is_book=is_book)
 
-#login code
+# login code
+
 @login_manager.user_loader
 def load_user(user_id):
     return database.getUserById(user_id)
@@ -39,6 +40,8 @@ def load_user(user_id):
 @app.template_filter('format_currency')
 def format_currency(i):
     return getFormattedCurrency(int(i))
+
+# Home Page
 
 @app.route('/')
 @app.route('/home')
@@ -50,12 +53,7 @@ def main(name="Home"):
     pprint(featured["Featured: "]["items"][0])
     return render_template("home.j2", name=name, featured=featured)
 
-def handle_item_details(item_id):
-    item = database.getStoreItemById(item_id)
-    if (item.isBook()):
-      return render_template("book.j2", item=item, book=item.item, author=item.item.author)
-    return render_template("item.j2", item=item)
-
+# Order Details
 @app.route('/orderdetails/<int:order_id>')
 @login_required
 def orderdetails(order_id):
@@ -66,6 +64,15 @@ def orderdetails(order_id):
     else:
         return flask.abort(401)
 
+# Item Details
+
+def handle_item_details(item_id):
+    item = database.getStoreItemById(item_id)
+    if (item.isBook()):
+      #author_items = database.getSomeBooksByAuthor(author_id=item.item.author.id)
+      return render_template("book.j2", item=item, book=item.item, author=item.item.author) #, auhtor_items=author_items)
+    return render_template("item.j2", item=item)
+
 @app.route('/item/<int:item_id>')
 def item_details(item_id):
     return handle_item_details(item_id)
@@ -74,6 +81,45 @@ def item_details(item_id):
 @app.route('/item/<int:item_id>/<string:slug>')
 def item_details_with_slug(item, slug):
     return handle_item_details(item)
+
+# Author Details / Items
+
+def handle_author(author_id):
+    page = request.args.get(key="page", default=1, type=int)
+    sort = request.args.get(key="sort", default=None, type=str)
+    author, author_items, is_next_page = database.getBooksByAuthor(author_id, sort, page)
+    if author is None:
+        return abort(404)
+    return render_template("author.j2", author=author, items=author_items, page=page, sort=sort, page_name='author', is_next_page=is_next_page)
+    
+@app.route('/author/<int:last_bit>')
+def author(last_bit):
+    return handle_author(last_bit)
+
+# Browse/Search
+
+@app.route('/browse')
+def browse():
+    search = request.args.get(key='search', default=None, type=str)
+    query = request.args.get(key='query', default=None, type=str)
+    if search is None:
+        return render_template("browse.j2", has_result=False)
+    if search == 'isbn':
+        item_id = database.getStoreItemIDByISBN(query)
+        if item_id is None:
+            return render_template("browse.j2", has_error=True, error="Whoops! We do not have any books with the isbn: %s" % (query))
+        else:
+            return redirect(url_for('item_details', item_id=item_id))
+    elif search == 'genre':
+        #todo
+        pass
+    else:
+        #this search can be handled by paged_query
+        pass
+    return render_template("browse.j2", has_result=False)
+
+
+# Account
 
 @app.route('/account')
 @login_required
@@ -135,6 +181,8 @@ def register(name='register'):
             login_user(user, remember)
             return redirect(next_page or url_for('/'))
 
+# Cart
+
 @app.route('/cart')
 def cart(name="cart"):
     if "cart" in session:
@@ -178,6 +226,8 @@ def updatecart():
         return redirect(url_for('cart'))
     flash("Error: item_id " + item_id + " does not exist!")
 
+# Checkout
+
 @app.route('/checkout', methods=['GET', 'POST'])
 @login_required
 def checkout():
@@ -201,6 +251,8 @@ def checkout():
             del session["cart"]
             return render_template("orderconfirm.j2", order=order)
         return flask.abort(400)
+
+# Misc
         
 @app.route('/about')
 def about(name="About"):

@@ -1,4 +1,4 @@
-import psycopg2, argparse
+import psycopg2, argparse, random
 import Types
 import main
 #provides various admin tasks
@@ -87,9 +87,13 @@ def insert_fake_books(count, cur):
     publisher_id = insert_fake_publisher(cur, address_id, banking_id)
     for i in range(count):
         #storeItem = makeFakeBook(i,str("fakebook #" + str(i)))
-        book_name = "Fake book #" + str(i)
+        book_name = "Fake book #" + str((i + 1))
         book_id = database.addBook(cur, book_name, "source_key", author_id, publisher_id, "1111", 250, "some text")
-        store_item_id = database.addStoreItem(cur, book_id, Types.ItemType.BOOK.value, book_name, 5, 250, 200, 0.55, 5, 'default.jpg')
+        price = random.randrange(1, 10000)
+        discount_price = price
+        if price > 1:
+            discount_price = random.randrange(1, price)
+        store_item_id = database.addStoreItem(cur, book_id, Types.ItemType.BOOK.value, book_name, 5, price, discount_price, 0.55, 5, 'default.jpg')
         addFeature(cur, store_item_id)
         items.append(store_item_id) 
 

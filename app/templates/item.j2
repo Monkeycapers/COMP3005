@@ -29,10 +29,10 @@
           <b>{{item.getFormattedPrice()}}</b>
         {% endif %}
         <p>
-        {% if item.quantity <= 10 %}
-        Hurry, only {{item.quantity}} items left in stock!
-        {% elif item.quantity <= 0 %}
+        {% if item.quantity <= 0 %}
         Sorry, this item is currently out of stock.
+        {% elif item.quantity <= 10 %}
+        Hurry, only {{item.quantity}} items left in stock!
         {% else %}
         {{item.quantity}} items in stock.
         {% endif %}

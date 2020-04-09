@@ -1,0 +1,39 @@
+Things that need to be done:
+
+- pagination frontend - almost done needs testing
+- sort
+    - by price high/low
+    - by name A-Z
+    - by popularity
+
+-Browse
+  - by author
+  - by genre
+  - by featured
+  - by popularity
+  - by price
+  - on sale
+
+-Search
+  - Search for author
+  - Search for book
+    - by ISBN
+
+-Genres
+  -Probably as a array of genre ids
+
+-Order history
+  -row per order for each store item
+
+-'send' email to publisher to place order for new books if quantity is less than threshold
+
+Admin
+-----
+Add / delete stuff
+Charts
+
+Report
+-----
+ER Diagram
+Normalization steps / tests
+Schema

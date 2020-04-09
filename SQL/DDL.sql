@@ -80,6 +80,13 @@ CREATE TABLE store_items (
     img_file_name text default 'default.jpg'
 );
 
+CREATE TABLE store_item_history (
+    store_item_id integer,
+    order_id integer,
+    amount integer,
+    price integer
+);
+
 CREATE TABLE featured_items (
     id integer primary key
 );

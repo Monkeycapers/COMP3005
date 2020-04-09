@@ -1,0 +1,13 @@
+{% extends "master.j2" %}
+
+{% block content %}
+{{super()}}
+
+<div class="container" style='margin-top:10px;'>
+    <div class="col">
+        <h2> Books by {{author.name}} </h2>
+        {{macros.paged_grid_result(items, page, sort, page_name, author.id, is_next_page)}}
+    </div>
+</div>
+
+{% endblock %}

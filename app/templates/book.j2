@@ -10,3 +10,8 @@ Published by: todo
 </p>
 
 {% endblock %}
+
+{% block image %}
+{{super()}}
+<a href={{url_for('author', last_bit=author.id)}}> More books by {{author.name}} </a>
+{% endblock %}

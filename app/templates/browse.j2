@@ -1,0 +1,29 @@
+{% extends "master.j2" %}
+
+{% block content %}
+{{super()}}
+
+<div class="container" style='margin-top:10px;'>
+    {% if has_error %}
+    <div class="alert alert-danger">
+    {{error}}
+    </div>
+    {% endif %}
+    <div class="row">
+    <div class="col">
+        <h2> Search </h2>
+        <form>
+            <select name="search">
+                <option value="book_name"> Book Name </option>
+                <option value="author_name"> Author Name </option>
+                <option value="genre"> Genre </option>
+                <option value="isbn"> ISBN (exact) </option>
+            </select>
+            <input type="text" placeholder="Search" name="query">
+            <input type="submit" class="btn btn-md btn-primary" value="Go">
+        </form>
+    </div>
+    </div>
+</div>
+
+{% endblock %}

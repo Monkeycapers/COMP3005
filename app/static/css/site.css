@@ -8,6 +8,11 @@
     flex-wrap: wrap;
 }
 
+.page-grid {
+    display: flex;
+    flex-wrap: wrap;
+}
+
 .book-card {
     margin-left: .5em;
     margin-right: .5em;

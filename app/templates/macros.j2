@@ -28,3 +28,41 @@
     </div>
   </div>
 {% endmacro %}
+
+{% macro paged_grid_result(items, page, sort, page_name, last_bit, is_next_page) %}
+  <div class="page-options" style='margin-bottom:10px'>
+  <form>
+    <input type='number' name='page' value={{page}} min=1 max={% if is_next_page %} {{page + 1}} {% else %} {{page}} {% endif %}>
+    <select name='sort' value={{sort}}>
+      <option value='price_low' {% if sort == 'price_low' %} selected {% endif %}> Price (Low to High) </option>
+      <option value='price_high' {% if sort == 'price_high' %} selected {% endif %}> Price (High to Low) </option>
+      <option value='name_A-Z' {% if sort == 'name_A-Z' %} selected {% endif %}> Alphabetical (A-Z) </option>
+      <option value='name_Z-A' {% if sort == 'name_Z-A' %} selected {% endif %}> Reverse Alphabetical (Z-A) </option>
+    </select>
+    <input type='submit' class='btn btn-primary' value='Submit'>
+  </form>
+  </div>
+  <div class='page-grid'>
+    {% for item in items %}
+      {{store_item_preview1(item)}}
+    {% endfor %}
+  </div>
+  <div class='page-numbers' style='margin-top:10px'>
+    <nav>
+    <ul class="pagination">
+      <li class={% if (page - 1) <= 0 %}"page-item disabled" {% else %} "page-item" {% endif %}>
+        <a class="page-link" href={{url_for(page_name, last_bit=last_bit, page=page, sort=sort)}}>Previous </a>
+      </li>
+      {# loop either page times or 4 times, whichever is lower #}
+      {% for i in range(1, [page + 1, 4] | min) %}
+      <li class="page-item">
+        <a class="page-link" href={{last_bit ~ '?page=' ~ (i)}}> {{i}} </a>
+      </li>
+      {% endfor %}
+      <li class={% if is_next_page %}"page-item" {% else %} "page-item disabled" {% endif %}>
+        <a class="page-link" href={{last_bit ~ '?page=' ~ (page + 1)}}>Next </a>
+      </li>
+    </ul>
+    </nav>
+  </div>
+{% endmacro %}
