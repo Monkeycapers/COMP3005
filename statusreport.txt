@@ -39,7 +39,7 @@ Schema
 
 
 New Things to be done:
-Search by publisher
+Search by publisher - done
 Cleanup Home
 Admin Reports
 Auto email
