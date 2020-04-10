@@ -5,6 +5,9 @@
 {{super()}}
 
 <div class="container" id='features' style='margin-top:25px'>
+<div class="logo row justify-content-center">
+  <img src={{url_for('static', filename='res/BELogo.png')}} style='height:200px;'>
+</div>
 {% for feature in featured %}
 {{macros.store_item_feature(feature, featured[feature]["url"], featured[feature]["items"])}}
 {% endfor %}

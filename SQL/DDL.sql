@@ -64,7 +64,8 @@ CREATE TABLE book (
     publisher_id integer,
     isbn text,
     page_count integer,
-    description text
+    description text,
+    genre text
 );
 
 CREATE TABLE store_items (
@@ -84,7 +85,8 @@ CREATE TABLE store_item_history (
     store_item_id integer,
     order_id integer,
     amount integer,
-    price integer
+    owner_share integer,
+    publisher_share integer
 );
 
 CREATE TABLE featured_items (

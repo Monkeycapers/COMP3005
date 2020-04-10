@@ -100,8 +100,12 @@ def author(last_bit):
 
 @app.route('/browse')
 def browse():
+
     search = request.args.get(key='search', default=None, type=str)
     query = request.args.get(key='query', default=None, type=str)
+    page = request.args.get(key="page", default=1, type=int)
+    sort = request.args.get(key="sort", default=None, type=str)
+
     if search is None:
         return render_template("browse.j2", has_result=False)
     if search == 'isbn':
@@ -110,12 +114,15 @@ def browse():
             return render_template("browse.j2", has_error=True, error="Whoops! We do not have any books with the isbn: %s" % (query))
         else:
             return redirect(url_for('item_details', item_id=item_id))
-    elif search == 'genre':
-        #todo
-        pass
     else:
         #this search can be handled by paged_query
-        pass
+        items, is_next_page = database.search(search, query, page, sort)
+        if len(items) == 1:
+            return redirect(url_for('item_details', item_id=items[0].id))
+        elif len(items) == 0:
+            return render_template("browse.j2", has_error=True, error="Whoops! No books found for the query %s" % (query))
+        else:
+            return render_template("browse.j2", has_result=True, items=items, page=page, sort=sort, is_next_page=is_next_page, query=query, search=search)
     return render_template("browse.j2", has_result=False)
 
 

@@ -27,9 +27,9 @@ def addPublisher(cur, name, address_id, banking_account_id):
     res = cur.fetchone()
     return res[0]
 
-def addBook(cur, name, source_key, author_id, publisher_id, isbn, page_count, description):
-    cur.execute("INSERT INTO book (source_key, name, author_id, publisher_id, isbn, page_count, description) VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id",
-                (source_key, name, author_id, publisher_id, isbn, page_count, description))
+def addBook(cur, name, source_key, author_id, publisher_id, isbn, page_count, description, genre):
+    cur.execute("INSERT INTO book (source_key, name, author_id, publisher_id, isbn, page_count, description, genre) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
+                (source_key, name, author_id, publisher_id, isbn, page_count, description, genre))
     res = cur.fetchone()
     return res[0]
 
@@ -82,7 +82,7 @@ def resolveRef(_id, item_type, cur):
         print("Res:")
         pprint(res)
         if res is not None:
-            book = Book(_id, res[1], res[2], getAuthorById(cur,res[3]), getPublisherById(cur,res[4]), res[5], "todo", res[6], res[7])
+            book = Book(_id, res[1], res[2], getAuthorById(cur,res[3]), getPublisherById(cur,res[4]), res[5], res[8], res[6], res[7])
             pprint(book)
             return book
     return None
@@ -134,8 +134,9 @@ def getStoreItemIDByISBN(isbn):
 # define mapping from kwarg => sql query (WHERE id=..., etc)
 KWARG_TO_SQL = {
     "author_id": {"flag": None, "query":"book.author_id=%s"},
-    "author_name": {"flag": "author", "query":"author.name LIKE %s"},
-    "book_name":{"flag": None, "query":"book.name LIKE %s"},
+    "author_name": {"flag": "author", "query":"author.name ~ %s"},
+    "book_name":{"flag": None, "query":"book.name ~ %s"},
+    "genre":{"flag": None, "query":"book.genre ~ %s"},
     "isbn": {"flag": None, "query":"book.isbn=%s"}
 }
 
@@ -146,7 +147,7 @@ SORT_TO_SQL = {
     "name_Z-A": "ORDER BY store_items.name DESC"
 }
 
-def doPagedQuery(cur, page, sort, **kwargs):
+def doPagedQuery(cur, page, sort, amount=Constants.PAGE_AMOUNT, **kwargs):
     #determine what tables to join with
     flags = {
         "author":False, #grab details from author
@@ -165,8 +166,8 @@ def doPagedQuery(cur, page, sort, **kwargs):
         if key not in KWARG_TO_SQL:
             continue
         sql_map = KWARG_TO_SQL[key]
-        if sql_map["flag"]:
-            flags[key] = True
+        if sql_map["flag"] is not None and sql_map["flag"] in flags:
+            flags[sql_map["flag"]] = True
         if didFirst:
             endStr += " AND "
         else:
@@ -174,7 +175,12 @@ def doPagedQuery(cur, page, sort, **kwargs):
         endStr += sql_map["query"]
         valList.append(value)
 
+    pprint(flags)
+
     #todo flags
+    if flags["author"]:
+        print("select author")
+        queryStr += " FULL OUTER JOIN author ON book.author_id=author.id "
     queryStr += endStr
 
     sortStr = SORT_TO_SQL[sort] if sort in SORT_TO_SQL else ''
@@ -195,11 +201,32 @@ def doPagedQuery(cur, page, sort, **kwargs):
     items = []
     for res in allres:
         author = kwargs['author_obj'] if 'author_obj' in kwargs else getAuthorById(cur, res[13])
-        book = Book(res[1], res[11], res[12], author, res[14], res[15], "todo", res[16], res[17])
+        book = Book(res[1], res[11], res[12], author, res[14], res[15], res[18], res[16], res[17])
         store_item = StoreItem(res[0], res[3], ItemType(res[2]), book, res[4], res[5], res[6], res[7], res[8], res[9])
         items.append(store_item)
     return items
     #for res in allres:    
+
+def search(search, query, page, sort):
+    conn = connect()
+    cur = conn.cursor()
+
+    items = None
+    if search == "author_name":
+        items = doPagedQuery(cur, page, sort, author_name=query)
+    elif search == "book_name":
+        items = doPagedQuery(cur, page, sort, book_name=query)
+    elif search == "genre":
+        items = doPagedQuery(cur, page, sort, genre=query)
+    else:
+        pass
+
+    is_next_page = len(items) == Constants.PAGE_AMOUNT
+
+    cur.close()
+    conn.close()
+    
+    return items, is_next_page
 
 def getBooksByAuthor(author_id, sort, page):
     conn = connect()
@@ -354,6 +381,7 @@ def addOrder(cart, total_price, total_discount, form, user):
             pay(store_item.item.publisher.id, publisher_share, cur)
         store_item.quantity -= order_item['quantity'] #todo I could detect that we need to order more books here
         updateItem(store_item, cur)
+        addOrderItemHistory(cur, item_id, order_id, order_item['quantity'], owner_share, publisher_share)
         #pay(publisher_id, cur)
 
     #order complete, commit
@@ -368,6 +396,10 @@ def addOrder(cart, total_price, total_discount, form, user):
     conn.close()
 
     return order
+
+def addOrderItemHistory(cur, store_item_id, order_id, amount, owner_share, publisher_share):
+    cur.execute("INSERT INTO store_item_history VALUES (%s, %s, %s, %s, %s)",
+                (store_item_id, order_id, amount, owner_share, publisher_share))
 
 # normally we would connect to an api once an order is 'shipped'
 # for demonstration purposes just return a random string

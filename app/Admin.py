@@ -88,7 +88,7 @@ def insert_fake_books(count, cur):
     for i in range(count):
         #storeItem = makeFakeBook(i,str("fakebook #" + str(i)))
         book_name = "Fake book #" + str((i + 1))
-        book_id = database.addBook(cur, book_name, "source_key", author_id, publisher_id, "1111", 250, "some text")
+        book_id = database.addBook(cur, book_name, "source_key", author_id, publisher_id, "1111", 250, "some text", "SomeGenre")
         price = random.randrange(1, 10000)
         discount_price = price
         if price > 1:
