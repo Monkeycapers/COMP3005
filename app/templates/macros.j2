@@ -13,6 +13,7 @@
     {% else %}
     {{sItem.getFormattedPrice()}}
     {% endif %}
+    <p>{% if sItem.inStock() %} In Stock {% else %} Out of Stock {% endif %}</p>
   </div>
   </a>
 </div>
@@ -30,12 +31,14 @@
 {% endmacro %}
 
 {% macro paged_grid_result(items, page, sort, is_next_page, search='', query='') %}
-  <div class="page-options" style='margin-bottom:10px'>
+  <div class="page-options">
   <form>
     <input type='hidden' name='search' value={{search}}>
     <input type='hidden' name='query' value={{query}}>
-    <input type='number' name='page' value={{page}} min=1 max={% if is_next_page %} {{page + 1}} {% else %} {{page}} {% endif %}>
-    <select name='sort' value={{sort}}>
+    <label for='page'> Page # </label>
+    <input style='width:70px' type='number' name='page' id='page' value={{page}} min=1 max={% if is_next_page %} {{page + 1}} {% else %} {{page}} {% endif %}>
+    <label for='sort'> Sort By: </label>
+    <select name='sort' id='sort' value={{sort}}>
       <option value='price_low' {% if sort == 'price_low' %} selected {% endif %}> Price (Low to High) </option>
       <option value='price_high' {% if sort == 'price_high' %} selected {% endif %}> Price (High to Low) </option>
       <option value='name_A-Z' {% if sort == 'name_A-Z' %} selected {% endif %}> Alphabetical (A-Z) </option>

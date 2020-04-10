@@ -43,7 +43,7 @@
             <label for='quantity'>Quantity: </label>
             <input style="width:50px; margin-bottom: 10px" type='number' id='quantity' name="quantity" min="1" max={{item.quantity}} value="1">
             <br>
-            <input type="submit" enabled={% if item.quantity <= 0 %} "false" {% else %} "true" {% endif %} class="btn btn-primary" value="Add To Cart">
+            <input type="submit" {% if not item.inStock() %} disabled {% endif %} class="btn btn-primary" value="Add To Cart">
         </form>
       {% endblock %}
     </div>

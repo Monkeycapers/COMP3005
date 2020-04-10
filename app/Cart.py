@@ -3,7 +3,7 @@ import json
 
 def makeOrderItem(store_item, quantity):
     return {
-        "id":store_item.id, "name": store_item.name, "quantity": quantity
+        "id":store_item.id, "name": store_item.name, "quantity": quantity, "image_file_name":store_item.image_file_name
     }
 
 def addItemToCart(items, store_item, quantity=1):
@@ -75,5 +75,5 @@ def simplify(items):
     newItems = {}
     for item_id in items:
         newItems[item_id] = {"id": item_id, "name":items[item_id]['name'], "quantity": items[item_id]['quantity'],
-                            "total_price": items[item_id]['total_price'] }
+                            "total_price": items[item_id]['total_price'], "image_file_name" : items[item_id]['image_file_name'] }
     return newItems

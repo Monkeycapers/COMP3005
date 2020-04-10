@@ -134,7 +134,9 @@ def getStoreItemIDByISBN(isbn):
 # define mapping from kwarg => sql query (WHERE id=..., etc)
 KWARG_TO_SQL = {
     "author_id": {"flag": None, "query":"book.author_id=%s"},
+    "publisher_id": {"flag": None, "query":"book.publisher_id=%s"},
     "author_name": {"flag": "author", "query":"author.name ~ %s"},
+    "publisher_name": {"flag": "publisher", "query":"publisher.name ~ %s"},
     "book_name":{"flag": None, "query":"book.name ~ %s"},
     "genre":{"flag": None, "query":"book.genre ~ %s"},
     "isbn": {"flag": None, "query":"book.isbn=%s"}
@@ -151,6 +153,7 @@ def doPagedQuery(cur, page, sort, amount=Constants.PAGE_AMOUNT, **kwargs):
     #determine what tables to join with
     flags = {
         "author":False, #grab details from author
+        "publisher": False
     }
     #initial query string
     queryStr = "SELECT * FROM store_items FULL OUTER JOIN book ON book.id=store_items.ref_id "
@@ -181,6 +184,9 @@ def doPagedQuery(cur, page, sort, amount=Constants.PAGE_AMOUNT, **kwargs):
     if flags["author"]:
         print("select author")
         queryStr += " FULL OUTER JOIN author ON book.author_id=author.id "
+    if flags["publisher"]:
+        print("select publisher")
+        queryStr += " FULL OUTER JOIN publisher ON book.publisher_id=publisher.id "
     queryStr += endStr
 
     sortStr = SORT_TO_SQL[sort] if sort in SORT_TO_SQL else ''
@@ -218,6 +224,8 @@ def search(search, query, page, sort):
         items = doPagedQuery(cur, page, sort, book_name=query)
     elif search == "genre":
         items = doPagedQuery(cur, page, sort, genre=query)
+    elif search == "publisher_name":
+        items = doPagedQuery(cur, page, sort, publisher_name=query)
     else:
         pass
 
@@ -245,6 +253,24 @@ def getBooksByAuthor(author_id, sort, page):
     cur.close()
     conn.close()
     return author, items, is_next_page
+
+def getBooksByPublisher(publisher_id, sort, page):
+    conn = connect()
+    cur = conn.cursor()
+
+    publisher = getPublisherById(cur, publisher_id)
+    if publisher is None:
+        cur.close()
+        conn.close()
+        abort(404)
+
+    items = doPagedQuery(cur, page, sort, publisher_id=publisher_id, publisher_obj=publisher)
+
+    is_next_page = len(items) == Constants.PAGE_AMOUNT
+
+    cur.close()
+    conn.close()
+    return publisher, items, is_next_page
     
 # End Paged Items
 

@@ -96,6 +96,20 @@ def handle_author(author_id):
 def author(last_bit):
     return handle_author(last_bit)
 
+# Publisher Items
+
+def handle_publisher(publisher_id):
+    page = request.args.get(key="page", default=1, type=int)
+    sort = request.args.get(key="sort", default=None, type=str)
+    publisher, publisher_items, is_next_page = database.getBooksByPublisher(publisher_id, sort, page)
+    if publisher is None:
+        return abort(404)
+    return render_template("publisher.j2", publisher=publisher, items=publisher_items, page=page, sort=sort, page_name='publisher', is_next_page=is_next_page)
+    
+@app.route('/publisher/<int:last_bit>')
+def publisher(last_bit):
+    return handle_publisher(last_bit)
+
 # Browse/Search
 
 @app.route('/browse')

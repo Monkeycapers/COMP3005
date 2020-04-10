@@ -37,9 +37,7 @@
 <tr>
   <th scope="row">
     <div>
-      {% block image %}
-        <img src={{url_for('static', filename='res/defaultBook.jpg')}} style='height:140px;'>  
-      {% endblock %}
+        <img src={{url_for('static', filename='imgs/%s' % item.image_file_name)}} style='height:140px;'>  
     </div>
   </th>
   <td>{{item.name}}</td>

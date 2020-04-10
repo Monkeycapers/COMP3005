@@ -13,13 +13,15 @@
     <div class="col">
         <h2> Search </h2>
         <form>
-            <select name="search">
-                <option value="book_name"> Book Name </option>
-                <option value="author_name"> Author Name </option>
-                <option value="genre"> Genre </option>
-                <option value="isbn"> ISBN (exact) </option>
+            <label for="search"> Search By: </label>
+            <select name="search" id="search">
+                <option value="book_name" {% if search == 'book_name' %} selected {% endif %}> Book Name </option>
+                <option value="author_name" {% if search == 'author_name' %} selected {% endif %}> Author Name </option>
+                <option value="genre" {% if search == 'genre' %} selected {% endif %}> Genre </option>
+                <option value="isbn" {% if search == 'isbn' %} selected {% endif %}> ISBN (exact) </option>
+                <option value="publisher_name" {% if search == 'publisher_name' %} selected {% endif %}> Publisher Name </option>
             </select>
-            <input type="text" placeholder="Search" name="query">
+            <input type="text" placeholder="Search" name="query" value={{query}}>
             <input type="submit" class="btn btn-md btn-primary" value="Go">
         </form>
     </div>

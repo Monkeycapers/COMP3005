@@ -36,3 +36,11 @@ Report
 ER Diagram
 Normalization steps / tests
 Schema
+
+
+New Things to be done:
+Search by publisher
+Cleanup Home
+Admin Reports
+Auto email
+Report

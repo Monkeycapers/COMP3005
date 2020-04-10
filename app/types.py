@@ -52,6 +52,9 @@ class StoreItem:
     def isSale(self):
         return self.price != self.discount_price
 
+    def inStock(self):
+        return self.quantity > 0
+
     def getFormattedCurrency(self, value):
         return "$" + format((value / 100), ',.2f')
 
