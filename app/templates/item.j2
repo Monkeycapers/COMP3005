@@ -8,7 +8,8 @@
     <div class='col' style='flex-grow:0'>
       <div>
       {% block image %}
-        <img src={{url_for('static', filename='res/defaultBook.jpg')}} style='height:325px;'>  
+        <img src={{url_for('static', filename='imgs/%s' % item.image_file_name)}} style='height:325px;'>
+        <hr>
       {% endblock %}
       </div>
     </div>

@@ -1,0 +1,1 @@
+# For performance reasons cache popular and recent 

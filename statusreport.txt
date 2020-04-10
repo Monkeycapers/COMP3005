@@ -1,6 +1,6 @@
 Things that need to be done:
 
-- pagination frontend - almost done needs testing
+- pagination frontend - needs more work
 - sort
     - by price high/low - done
     - by name A-Z - done
@@ -9,6 +9,7 @@ Things that need to be done:
 -Browse
   - by author
   - by genre
+  - by publisher
   - by featured
   - by popularity
   - by price
@@ -18,14 +19,12 @@ Things that need to be done:
   - Search for author - done (books by author names like input ... might want to add search for authors directly)
   - Search for book - done
     - by ISBN - done
-
--Genres
-  -Probably as a array of genre ids
+  - Search by genre - done
 
 -Order history
-  -row per order for each store item
+  -row per order for each store item - done
 
--'send' email to publisher to place order for new books if quantity is less than threshold
+-'send' email to publisher to place order for new books if quantity is less than threshold - WIP
 
 Admin
 -----
