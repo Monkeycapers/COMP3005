@@ -21,7 +21,7 @@
 
 {% macro store_item_feature(name, url, storeitems) %}
   <div>
-  <div class='feature-head'><h4>{{name}}</h4> <span><a href={{url}}>See More</a></span></div>
+  <div class='feature-head'><h4>{{name}}</h4> <!-- <span><a href={{url}}>See More</a></span> --></div>
     <div class='feature-row'>
       {% for item in storeitems %}
         {{store_item_preview1(item)}}

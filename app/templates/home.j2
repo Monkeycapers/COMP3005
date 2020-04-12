@@ -9,6 +9,20 @@
 <div class="logo row justify-content-center">
   <img src={{url_for('static', filename='res/BELogo.png')}} style='height:200px;'>
 </div>
+<div class="search-div row justify-content-center">
+  <form action="/browse">
+      <label for="search"> Search By: </label>
+      <select name="search" id="search">
+          <option value="book_name"> Book Name </option>
+          <option value="author_name"> Author Name </option>
+          <option value="genre"> Genre </option>
+          <option value="isbn"> ISBN (exact) </option>
+          <option value="publisher_name"> Publisher Name </option>
+      </select>
+      <input type="text" placeholder="Search" name="query">
+      <input type="submit" class="btn btn-md btn-primary" value="Go">
+  </form>
+</div>
 {% for feature in featured %}
 {{macros.store_item_feature(feature, featured[feature]["url"], featured[feature]["items"])}}
 {% endfor %}

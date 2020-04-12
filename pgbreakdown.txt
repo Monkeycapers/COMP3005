@@ -1,0 +1,12 @@
+- Conceptual Design: 25%
+
+- Reduction to Relation Schemas: 20%
+
+- Normalization of Relation Schemas: 20%
+
+- Database Schema Diagram: 10%
+
+- Quality of Implementation: 25%
+I want to explain this a little bit. This means that your application design should be clean in terms of what modules does what and the how the application interacts with the database. This interaction needs to be clear and via the queries that you write to support the features in the application.
+
+- Bonus: Up to 15%

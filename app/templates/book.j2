@@ -5,7 +5,9 @@
 <h5> Author: {{author.name}}</h5>
 
 <p>Genre: {{book.genre}} <br>
-   Published by: {{book.publisher.name}}</p>
+   Published by: {{book.publisher.name}} <br>
+   Page Count: {{book.page_count}}
+</p>
 
 <p>
 {{book.description}}
@@ -16,5 +18,6 @@
 {% block image %}
 {{super()}}
 <a href={{url_for('author', last_bit=author.id)}}> More books by {{author.name}} </a>
+<br>
 <a href={{url_for('publisher', last_bit=book.publisher.id)}}> More books Published by {{book.publisher.name}} </a>
 {% endblock %}

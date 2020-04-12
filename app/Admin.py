@@ -145,7 +145,11 @@ def mainLoop(cur):
             revenue_share_percent = input('\nrevenue_share_percent (float): ').strip()
             auto_order_threshold = input('\nauto_order_threshold: ').strip()
             image_file_name = input('\nimage filename (in static/imgs): ').strip()
+            featured = input('featured: (y/n)').strip()
+            fFlag = featured == 'y'
             store_item_id = database.addStoreItem(cur, book_id, Types.ItemType.BOOK.value, name, quantity, price, discount_price, revenue_share_percent, auto_order_threshold, image_file_name)
+            if fFlag:
+                addFeature(cur, store_item_id)
             print("\nStore Item ID: %s " % (store_item_id))
         elif s == 2:
             name = input('\nname: ').strip()

@@ -8,7 +8,7 @@ from psycopg2.extras import Json
 import random, string
 import math
 
-DEFAULT_FEATURED_ITEM_COUNT = 7
+DEFAULT_FEATURED_ITEM_COUNT = 49
 TRACKING_NUMBER_LENGTH = 64
 
 def connect():

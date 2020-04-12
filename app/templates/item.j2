@@ -27,7 +27,7 @@
           <del>{{item.getFormattedPrice()}}</del>
           <p> You save: <b>{{item.getFormattedCurrency(item.price - item.discount_price)}}!</b>
         {% else %}
-          <b>{{item.getFormattedPrice()}}</b>
+          <span class='big-price'>{{item.getFormattedPrice()}}</span>
         {% endif %}
         <p>
         {% if item.quantity <= 0 %}
