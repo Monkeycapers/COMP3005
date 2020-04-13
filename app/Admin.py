@@ -4,6 +4,8 @@ import main
 #provides various admin tasks
 
 DDL_FILE="../SQL/DDL.sql"
+FUNCTIONS_FILE="../SQL/Functions.sql"
+TRIGGERS_FILE="../SQL/Triggers.sql"
 
 database = main.database
 
@@ -47,7 +49,12 @@ def toggle_super(id, cur):
     #cur.execute("")
 
 def create_tables(cur):
+    #create database tables
     cur.execute(open(DDL_FILE, "r").read())
+    #create Functions
+    cur.execute(open(FUNCTIONS_FILE, "r").read())
+    #create triggers
+    cur.execute(open(TRIGGERS_FILE, "r").read())
 
 def insert_fake_author(cur):
     return database.addAuthor(cur, "source_key", "Fake Author")
